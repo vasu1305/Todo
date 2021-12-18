@@ -42,6 +42,41 @@ def getRoutes(request):
     ]
     return Response(routes)
 
+
+
+class TaskApi(APIView):
+    def get(self, request, *args, **kwargs):
+        task  = Todo.objects.filter(user = request.user.id)
+        serializer = TodoSerializer(task, many=True)
+        identity = [{'user': request.user}]
+        return Response(serializer.data, identity)
+
+    def get(self, request, id=id, *args, **kwargs):
+        task  = get_list_or_404(Todo, id=request.GET.get('id'))
+        serializer = TodoSerializer(task)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = TodoSerializer(data=request.data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+
+    def patch(self, request, id=id):
+        task  = get_list_or_404(Todo, id=request.GET.get('id'))
+        serializer = TodoSerializer(task, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors)
+
+    def delete(self, request, id=id):
+        id = request.GET.get('id')
+        task = Todo.objects.get(id=id)
+        task.delete()
+        return Response('Task was deleted')
+        
 # @api_view(['GET'])
 # def get(request, id=None):
 #     if id is not None:
@@ -78,37 +113,3 @@ def getRoutes(request):
 #     task = Todo.objects.get(id=id)
 #     task.delete()
 #     return Response('Task was deleted')
-
-
-class TaskApi(APIView):
-    def get(self, request, *args, **kwargs):
-        task  = Todo.objects.filter(user = request.user.id)
-        serializer = TodoSerializer(task, many=True)
-        identity = [{'user': request.user}]
-        return Response(serializer.data, identity)
-
-    def get(self, request, id=id, *args, **kwargs):
-        task  = get_list_or_404(Todo, id=request.GET.get('id'))
-        serializer = TodoSerializer(task)
-        return Response(serializer.data)
-
-    def post(self, request):
-        serializer = TodoSerializer(data=request.data, many=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
-
-    def patch(self, request, id=id):
-        task  = get_list_or_404(Todo, id=request.GET.get('id'))
-        serializer = TodoSerializer(task, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors)
-
-    def delete(self, request, id=id):
-        id = request.GET.get('id')
-        task = Todo.objects.get(id=id)
-        task.delete()
-        return Response('Task was deleted')
